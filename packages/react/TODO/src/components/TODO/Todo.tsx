@@ -14,16 +14,7 @@ function Todo() {
   const addTodo = (text: string) => {
     console.log("text: ", text);
     // 生成一个��一的 id
-    const stringHash = (str: string) => {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash |= 0; // 将hash转换为32位整数
-      }
-      return hash;
-    };
-    const id = stringHash(text);
+    const id = todoList.length + 1;
     // 创建一个新的 todoItem
     const newTodo: TodoItem = {
       id,
@@ -61,7 +52,7 @@ function Todo() {
 
   return (
     <div>
-      <h1>todo list</h1>
+      <h1>todo list ({filter})</h1>
       <TodoAdd addTodoItem={addTodo}></TodoAdd>
       <TodoList
         todoList={filterStatue()}
