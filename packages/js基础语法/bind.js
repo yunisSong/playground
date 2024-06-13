@@ -23,3 +23,14 @@ const lileiChangeAge = changeAge.bind(lilei);
 lileiChangeAge();
 const hanmeimeiChangeAge = changeAge.bind(hanmeimei);
 hanmeimeiChangeAge();
+
+function yunisTest(arg1, arg3) {
+  console.log(this.name, arg1, arg3);
+}
+
+console.log("yunisTest.toString() : ", yunisTest.toString());
+
+console.log("yunisTest.length : ", yunisTest.length);
+
+console.log("yunisTest.arguments : ", yunisTest.arguments);
+console.log("yunisTest.caller : ", yunisTest.caller);

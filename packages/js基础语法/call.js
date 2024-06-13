@@ -59,10 +59,3 @@ const test3 = () => {
   person.fullName.apply(person1, ["Oslo", "Norway"]); //log fullName Bill Gates,Oslo,Norway
 };
 test3();
-
-const sdsd = [
-  "Global Transit(CTGNet)",
-  "Global Internet Access(CTGNet)",
-  "DCIC",
-  "Global DIA",
-];
