@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 400px;
+        height: 400px;
+        border: 1px solid #ccc;
+        position: relative;
+      }
+      .top,
+      .bottom {
+        width: 100%;
+        flex: 1;
+        background-color: antiquewhite;
+        overflow-x: scroll;
+      }
+      .bottom {
+        width: 300px;
+      }
+      .content {
+        width: 800px;
+        height: 100%;
+        display: flex;
+        justify-content: space-between;
+      }
+      .bottom .content {
+        width: 500px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="top always-scroll">
+        <div class="content">
+          <div class="flex-item">left</div>
+          <div class="flex-item">right</div>
+        </div>
+      </div>
+      <div class="bottom always-scroll">
+        <div class="content">
+          <div class="flex-item">left</div>
+          <div class="flex-item">right</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const topDiv = document.querySelector(".top");
+      const bottomDiv = document.querySelector(".bottom");
+      // topDiv.addEventListener("scroll", () => {
+      //   // bottomDiv.scrollLeft = topDiv.scrollLeft;
+      //   console.log("topDiv.scrollLeft: ", topDiv.scrollLeft);
+      //   console.log("topDiv.offsetWidth: ", topDiv.scrollWidth);
+      // });
+      bottomDiv.addEventListener("scroll", () => {
+        // 计算偏移的百分比
+        const radio =
+          bottomDiv.scrollLeft /
+          (bottomDiv.scrollWidth - bottomDiv.offsetWidth);
+        // 根据下面的偏移百分比设置上上面的偏移量
+        topDiv.scrollLeft = (topDiv.scrollWidth - topDiv.offsetWidth) * radio;
+      });
+    </script>
+  </body>
+</html>

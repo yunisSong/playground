@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "todo": "cd packages/react/TODO && pnpm run dev"
+    "todo": "cd packages/react/TODO && pnpm run dev",
+    "workFlow": "cd packages/workFlow && pnpm run dev",
+    "vuejsx": "cd packages/vue+vite+ts/vite-project && pnpm run dev"
   },
   "keywords": [],
   "author": "",
