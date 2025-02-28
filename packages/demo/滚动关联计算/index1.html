@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        width: 400px;
+        height: 400px;
+        border: 1px solid #ccc;
+        position: relative;
+      }
+      .top,
+      .bottom {
+        height: 100%;
+        flex: 1;
+        background-color: antiquewhite;
+        overflow-y: scroll;
+      }
+      .bottom {
+        width: 300px;
+      }
+      .content {
+        height: 800px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .bottom .content {
+        height: 500px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="top always-scroll">
+        <div class="content">
+          <div class="flex-item">left</div>
+          <div class="flex-item">right</div>
+        </div>
+      </div>
+      <div class="bottom always-scroll">
+        <div class="content">
+          <div class="flex-item">left</div>
+          <div class="flex-item">right</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const topDiv = document.querySelector(".top");
+      const bottomDiv = document.querySelector(".bottom");
+      // topDiv.addEventListener("scroll", () => {
+      //   // bottomDiv.scrollLeft = topDiv.scrollLeft;
+      //   console.log("topDiv.scrollLeft: ", topDiv.scrollLeft);
+      //   console.log("topDiv.offsetWidth: ", topDiv.scrollWidth);
+      // });
+      bottomDiv.addEventListener("scroll", () => {
+        // 计算偏移的百分比
+        const radio =
+          bottomDiv.scrollTop /
+          (bottomDiv.scrollHeight - bottomDiv.offsetHeight);
+        // 根据下面的偏移百分比设置上上面的偏移量
+        topDiv.scrollTop = (topDiv.scrollHeight - topDiv.offsetHeight) * radio;
+      });
+    </script>
+  </body>
+</html>

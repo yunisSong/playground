@@ -1,0 +1,255 @@
+//智能计税需求，5大国家（签单局）的订单Income GST字段调整为只读，不可录入。
+//二期：加拿大，法国,俄罗斯,阿联酋，迪拜,埃及
+//泰国，缅甸，柬埔寨:
+//Thailand Branch：180411697855
+// CTG Thailand Branch：200227019855
+// China Telecom (Myanmar) Limited：180411695811
+// CTG China Telecom (Myanmar) Limited：200227019811
+// Branch of China Telecom Global Limited：190626762734
+// CTG Branch of China Telecom Global Limited：200227019834
+//三期迭代2024.9.2
+//马来西亚，哈萨克斯坦，越南，韩国：
+// 130129903074：Malaysia Branch
+// 200227019874：CTG Malaysia Branch
+// 141229079197：Kazakhstan Branch
+// 200227019897：CTG Kazakhstan Branch
+// 130129903231：Vietnam Branch
+// 200227019831：CTG Vietnam Branch
+// 130129903071：Korea Branch
+// 200227019871：CTG Korea Branch
+// 150524650789：Kenya Branch (MEA)
+
+console.log("gstInfo")
+let isAcceptList = [
+  "121201005741",
+  "121215041640",
+  "161103588662",
+  "130129903228",
+  "150524650787",
+  "150524650787",
+  "130227177180",
+  "130823196948",
+  // "121215041651",
+  "160504143888",
+  "200325392488",
+  "220830345262",
+  "180411697855",
+  "200227019855",
+  // "180411695811",
+  // "200227019811",
+  "190626762734",
+  "200227019834",
+  "130129903074",
+  "200227019874",
+  "141229079197",
+  "200227019897",
+  "130129903231",
+  "200227019831",
+  "130129903071",
+  "200227019871",
+  "150524650789",
+]
+
+//亚太、欧洲、中东非才有这个字段，
+const quoteUsExtend = $form.fields["order"].componentProps?.ieplValue
+
+const { run: checkIncomeGSTRun } = $self.form.propForm.orderApi
+  .checkIncomeGST()
+  .run({
+    manual: true,
+    onSuccess: (res) => {
+      //返回结果：0：校验必填，1：不用校验
+      res.data === "0"
+        ? ($self.componentProps.isNonCrossBorderTaxCodeApproval = true)
+        : ($self.componentProps.isNonCrossBorderTaxCodeApproval = false)
+
+      $self.componentProps.isNonCrossBorderTaxCodeApproval
+        ? ($self.required = true)
+        : ($self.required = false)
+    },
+  })
+let getStatus = ($self) => {
+  if (
+    $tempStore?.initOrderList?.BELONG_ORG_ID === "121201005741" ||
+    $tempStore?.initOrderList?.BELONG_ORG_ID === "121129000127" ||
+    $tempStore?.initOrderList?.BELONG_ORG_ID === "150324085390" ||
+    isAcceptList?.includes($tempStore.initOrderList.ACCEPT_REGION_ID)
+  ) {
+    $self.display = "visible"
+    //账务审核环节明细中（OrderAuditQuote） 亚太，中东非才可修改，欧洲只读
+
+    // if (
+    //   $form.route.name === "OrderAuditQuote" &&
+    //   ($tempStore.initOrderList.BELONG_ORG_ID === "121201005741" ||
+    //     $tempStore.initOrderList.BELONG_ORG_ID === "150324085390")
+    // ) {
+    //   $self.pattern = "editable"
+    // } else if ($tempStore.initOrderList.BELONG_ORG_ID === "121129000127") {
+    //   $self.pattern = "disabled"
+    // }
+    //2024.3.5要求账务审核都要能修改
+    console.log("$form.route.name", $form.route.name === "OrderAuditQuote")
+    if (
+      $form.route.name === "OrderAuditQuote" ||
+      $form.route.name?.value === "OrderAuditQuote"
+    ) {
+      $self.pattern = "editable"
+      return
+    }
+    //在明细中，只有送审阶段亚太才可编辑
+    if (
+      ($form.route.name === "Order Send for Apporval" ||
+        $form.route.name?.value === "Order Send for Apporval") &&
+      quoteUsExtend?.taskMap["CURRENT_TASK"]?.includes("TACHE00070001") &&
+      $tempStore.initOrderList.BELONG_ORG_ID === "121201005741"
+    ) {
+      $self.pattern = "editable"
+    } else if (
+      //欧洲订单 订单送审环节income gst控制非必填（taxamount填写时也控制非必填）；
+      //欧洲订单order update控制income gst控制非必填taxamount填写时也控制非必填）
+      ($form.route.name === "Order Send for Apporval" ||
+        $form.route.name?.value === "Order Send for Apporval") &&
+      (quoteUsExtend?.taskMap["CURRENT_TASK"]?.includes("TACHE00070001") ||
+        quoteUsExtend?.taskMap["CURRENT_TASK"]?.includes("TACHE00220001")) &&
+      $tempStore.initOrderList.BELONG_ORG_ID === "121129000127"
+    ) {
+      $self.required = false
+    } else if (
+      //欧洲订单 账务审核提交时如果触发了Non Cross-border Tax Code Approval时，income gst控制非必填（taxamount填写时也控制非必填）
+      //【save的时候不校验income gst必填】，否则提交账务审核校验income gst必填。
+      ($form.route.name === "OrderAuditQuote" ||
+        $form.route?.name === "OrderAuditQuote") &&
+      $tempStore.initOrderList.BELONG_ORG_ID === "121129000127"
+    ) {
+      console.log("$form.route.query", $form.route)
+      let params = {
+        orderItemId: $form.route.query?.value?.orderItemId,
+        custId: $form.route.query?.value?.custId,
+      }
+
+      checkIncomeGSTRun(params)
+    } else if (
+      // 不是亚太，就直接禁用了
+      $form.route.name === "Order Send for Apporval" &&
+      $tempStore.initOrderList.BELONG_ORG_ID !== "121201005741"
+    ) {
+      $self.pattern = "disabled"
+    }
+
+    //独立判断智能计税签单局是否可编辑
+    if (isAcceptList?.includes($tempStore.initOrderList.ACCEPT_REGION_ID)) {
+      $self.pattern = "disabled"
+    }
+    //亚太、中东非和欧洲发起的CTGBD签单的不需要校验income gst、NRC taxable amount、MRC taxable amount必填
+    if ($tempStore.initOrderList.ACCEPT_REGION_ID === "151107637365") {
+      $self.required = false
+    }
+  } else {
+    $self.display = "none"
+  }
+  //仅针对Belarus Branch签单局发起的VPN、IEPL、Internet Access、VPN(Industrial Park)产品新装单，Income GST字段，
+  //请控制默认为BY (26%)-Output Tax-Data Transfer Service(Internet)选项
+  if (
+    $tempStore.initOrderList.ACCEPT_REGION_ID === "170309632941" &&
+    $form.propForm.route.query.serviceOfferId === "50040001" &&
+    ($form.propForm.route.query.productId === "121129971513" ||
+      $form.propForm.route.query.productId === "121126894643") &&
+    !$self.value
+  ) {
+    $self.value = "170310633388"
+  }
+
+  //土耳其签单局要求字段必填
+  if ($tempStore?.initOrderList?.ACCEPT_REGION_ID === "210624165360") {
+    $self.required = true
+  }
+}
+$effect(() => {
+  let status = {}
+  getStatus(status)
+  Object.keys(status).forEach((key) => {
+    if (key === "pattern") {
+      $self[key] = Reflect.has(
+        $tempStore.linkSubmitfieIdsValue,
+        $self.props.name
+      )
+        ? status[key]
+        : "disabled"
+      return
+    }
+    $self[key] = status[key]
+  })
+}, [reactiveObj.order, reactiveObj.active])
+
+const { data, run } = $self.form.propForm.orderApi.selectIncomeGST().run({
+  manual: true,
+  onSuccess: (res) => {
+    let _list = []
+    res.data &&
+      res.data?.forEach((item) => {
+        _list.push({
+          label: item.taxName,
+          value: item.rowId,
+        })
+      })
+    $self.dataSource = _list
+  },
+})
+
+$effect(() => {
+  let params = {
+    handleOrgId:
+      $tempStore.initOrderList.HANDLE_ORG_ID ||
+      $form?.route?.query?.handleOrgId ||
+      $form?.propForm?.route?.query?.handleOrgId,
+  }
+  run(params)
+}, [$tempStore.initOrderList.HANDLE_ORG_ID])
+
+//一次审核时incomme GST 会根据profitCenter的值联动触发接口，（2023.12.19生产故障，需求遗漏规则）
+const profitCenter = $self
+  .query(/1;ordOfferInstAttr;COMPANY_CODE$/)
+  .take()?.value
+$effect(() => {
+  if (profitCenter && reactiveObj.active) {
+    run({
+      handleOrgId: profitCenter,
+    })
+    $self.value = ""
+  }
+}, [profitCenter])
+
+let taxNRC = $self.query(/1;ordOfferInstAttr;NRC_GST$/).take()?.value
+let taxMRC = $self.query(/1;ordOfferInstAttr;MRC_GST$/).take()?.value
+//1-1）Income GST、MRC Taxable amount、NRC Taxable amount三个字段其中一个有值，另外两个字段必填
+$effect(() => {
+  //2024.06.01 优化 满足智能计税的情况下，不触发联动必填
+  if (!isAcceptList?.includes($tempStore.initOrderList.ACCEPT_REGION_ID)) {
+    if (
+      //欧洲订单 订单送审环节income gst控制非必填（taxamount填写时也控制非必填）；
+      //欧洲订单order update控制income gst控制非必填taxamount填写时也控制非必填）
+      ($form.route.name === "Order Send for Apporval" ||
+        $form.route?.name === "Order Send for Apporval") &&
+      (quoteUsExtend?.taskMap["CURRENT_TASK"]?.includes("TACHE00070001") ||
+        quoteUsExtend?.taskMap["CURRENT_TASK"]?.includes("TACHE00220001")) &&
+      $tempStore.initOrderList.BELONG_ORG_ID === "121129000127"
+    ) {
+      $self.required = false
+    } else if (
+      ($form.route.name === "OrderAuditQuote" ||
+        $form.route?.name === "OrderAuditQuote") &&
+      $tempStore.initOrderList.BELONG_ORG_ID === "121129000127"
+    ) {
+      $self.componentProps.isNonCrossBorderTaxCodeApproval
+        ? ($self.required = true)
+        : ($self.required = false)
+    } else {
+      if (taxNRC || taxMRC) {
+        $self.required = true
+      } else {
+        $self.required = false
+        $self.validate()
+      }
+    }
+  }
+}, [taxNRC, taxMRC])
