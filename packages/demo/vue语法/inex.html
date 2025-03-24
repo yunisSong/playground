@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+      .card {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 20px;
+        margin: 20px;
+      }
+      .card .card-header {
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+      .card .card-body {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="app1"></div>
+  </body>
+
+  <script>
+    const { render, createApp, h } = Vue;
+    // 创建一个 card 组件
+    const Card = {
+      props: {
+        title: String,
+      }, // props 是组件的输入
+      setup(props, { slots }) {
+        return () =>
+          h("div", { class: "card" }, [
+            h("div", { class: "card-header" }, props.title),
+            h(
+              "div",
+              { class: "card-body" },
+              slots.default ? slots.default() : []
+            ),
+          ]);
+      },
+    };
+    const Card2 = {
+      props: {
+        title: String,
+      }, // props 是组件的输入
+      template: `
+      <div class="card">
+        <div class="card-header">{{ title + "__小尾巴" }}</div>
+        <div class="card-body">
+          <slot></slot>
+        </div>
+      </div>
+    `,
+    };
+
+    const title = "标题变量";
+    const content = "内容变量";
+    createApp({
+      render() {
+        return [
+          h(Card, { title: "标题" }, () => [
+            h("p", null, "内容1"),
+            h("p", null, "内容2"),
+          ]),
+          h(Card2, { title: "标题" }, () => [
+            h("p", null, "内容1"),
+            h("p", null, "内容2"),
+          ]),
+        ];
+      },
+    }).mount("#app"); // 挂载到 id 为 app 的元素上
+
+    createApp({
+      // 使用 h 函数将 card 组件显示在页面上
+      components: {
+        Card2,
+      },
+      template: `
+      <Card2 title="${title}">
+        <p>${content}</p>
+        <p>${content}</p>
+        <p>${content}</p>
+        <p>${content}</p>
+      </Card2>
+    `,
+    }).mount("#app1"); // 挂载到 id 为 app 的元素上
+  </script>
+</html>
